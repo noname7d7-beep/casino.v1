@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Money Talks — Admin Login</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Минимальные стили вшиты — можешь переместить в style.css */
+    body{margin:0;height:100vh;display:flex;align-items:center;justify-content:center;background:#050018;color:#fff;font-family:Inter, sans-serif}
+    .panel{width:360px;padding:28px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 12px 40px rgba(0,0,0,0.6);text-align:center}
+    h2{margin:0 0 16px; font-size:20px}
+    input{width:100%;padding:12px;border-radius:10px;border:none;margin-bottom:12px;font-size:16px}
+    button{width:100%;padding:12px;border-radius:10px;border:none;background:#00d1a6;color:#001; font-weight:700;cursor:pointer}
+    .hint{color:#9aa; font-size:13px;margin-top:10px}
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h2>Money Talks — Admin Login</h2>
+    <input id="pin" type="password" placeholder="Введите PIN" autocomplete="off" />
+    <button id="loginBtn">Войти</button>
+    <div class="hint">PIN хранится локально. По умолчанию: <strong>admin1234</strong> (измени в admin.js)</div>
+  </div>
+
+  <script>
+    // Простой клиентский логин: ВАЖНО — это не защищённо на проде
+    const LOGIN_KEY = 'mt_admin'; // ключ который ставим в localStorage
+    const CORRECT_PIN = 'admin1234'; // можешь сменить здесь или в admin.js
+
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const pin = document.getElementById('pin').value.trim();
+      if(!pin) return alert('Введите PIN');
+      if(pin === CORRECT_PIN){
+        localStorage.setItem(LOGIN_KEY, 'granted');
+        // опционально: отмечаем время входа
+        localStorage.setItem('mt_admin_at', Date.now());
+        window.location.href = 'index.html';
+      } else {
+        alert('Неверный PIN');
+      }
+    });
+
+    // Если уже залогинен — редирект
+    if(localStorage.getItem(LOGIN_KEY) === 'granted'){
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

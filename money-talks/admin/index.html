@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>iSignal — Admin Panel</title>
+  <style>
+    body {
+      background: radial-gradient(circle at center, #050e19, #010409);
+      color: #fff;
+      font-family: Inter, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+      font-size: 28px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #00ff88;
+    }
+
+    .games {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: scale(1.02);
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .input {
+      margin: 10px 0;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      width: 100px;
+      text-align: center;
+    }
+
+    .btn {
+      background: linear-gradient(90deg, #06d66b, #04aa4f);
+      color: #000;
+      font-weight: 700;
+      padding: 8px 20px;
+      border-radius: 40px;
+      cursor: pointer;
+      border: none;
+      transition: 0.2s;
+      margin: 6px 0;
+    }
+
+    .btn:hover { transform: scale(1.05); }
+
+    .random-btn {
+      background: linear-gradient(90deg, #ff004d, #ff7e00);
+      color: #fff;
+    }
+
+    .status {
+      margin-top: 8px;
+      font-size: 13px;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <h1>🛰 iSignal — Панель Админа</h1>
+
+  <div class="games">
+    <!-- Aviator -->
+    <div class="card" id="aviator">
+      <div class="title">✈ Aviator</div>
+      <input type="number" id="aviatorValue" class="input" placeholder="x" step="0.01" min="1">
+      <button class="btn" onclick="setSignal('aviator')">Установить</button>
+      <button class="btn random-btn" onclick="setRandom('aviator')">🎲 Рандом</button>
+      <div class="status" id="aviatorStatus">Статус: —</div>
+    </div>
+
+    <!-- Mines -->
+    <div class="card" id="mines">
+      <div class="title">💣 Mines</div>
+      <input type="number" id="minesValue" class="input" placeholder="Мин" min="1" max="15">
+      <button class="btn" onclick="setSignal('mines')">Установить</button>
+      <button class="btn random-btn" onclick="setRandom('mines')">🎲 Рандом</button>
+      <div class="status" id="minesStatus">Статус: —</div>
+    </div>
+
+    <!-- Crash -->
+    <div class="card" id="crash">
+      <div class="title">🚀 Crash</div>
+      <input type="number" id="crashValue" class="input" placeholder="x" step="0.01" min="1">
+      <button class="btn" onclick="setSignal('crash')">Установить</button>
+      <button class="btn random-btn" onclick="setRandom('crash')">🎲 Рандом</button>
+      <div class="status" id="crashStatus">Статус: —</div>
+    </div>
+
+    <!-- Dice -->
+    <div class="card" id="dice">
+      <div class="title">🎲 Dice</div>
+      <input type="number" id="diceValue" class="input" placeholder="%" min="0" max="100">
+      <button class="btn" onclick="setSignal('dice')">Установить</button>
+      <button class="btn random-btn" onclick="setRandom('dice')">🎲 Рандом</button>
+      <div class="status" id="diceStatus">Статус: —</div>
+    </div>
+  </div>
+
+  <script>
+    // Загружаем текущие статусы
+    const statusEls = {
+      aviator: document.getElementById('aviatorStatus'),
+      mines: document.getElementById('minesStatus'),
+      crash: document.getElementById('crashStatus'),
+      dice: document.getElementById('diceStatus'),
+    };
+
+    function updateStatus(game, text) {
+      statusEls[game].textContent = 'Статус: ' + text;
+    }
+
+    function setSignal(game) {
+      const val = parseFloat(document.getElementById(game + 'Value').value);
+      if (!val || val <= 0) return alert('Введите корректное значение!');
+      const payload = {
+        type: game + '_signal',
+        value: val,
+        random: false
+      };
+      localStorage.setItem('mt_signal', JSON.stringify(payload));
+      updateStatus(game, `Установлено: ${val}`);
+    }
+
+    function setRandom(game) {
+      const payload = {
+        type: game + '_signal',
+        random: true
+      };
+      localStorage.setItem('mt_signal', JSON.stringify(payload));
+      updateStatus(game, 'Режим: рандом');
+    }
+
+    // При загрузке восстанавливаем состояние
+    const current = JSON.parse(localStorage.getItem('mt_signal') || '{}');
+    if (current.type) {
+      const game = current.type.replace('_signal', '');
+      if (current.random) updateStatus(game, 'Режим: рандом');
+      else if (current.value) updateStatus(game, `Установлено: ${current.value}`);
+    }
+  </script>
+</body>
+</html>

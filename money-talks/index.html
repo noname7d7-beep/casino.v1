@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MONEY TALKS — iSignal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Загрузочный экран -->
+  <div id="loader" class="loader">
+    <div class="loader-inner">
+      <div class="diamond">💎</div>
+      <h1 class="logo">MONEY TALKS</h1>
+      <div class="loading-dots">Loading<span class="dots">...</span></div>
+    </div>
+  </div>
+
+  <!-- Основное приложение -->
+  <div id="app" class="app hidden">
+    <header class="topbar">
+      <div class="controls">
+        <button id="langBtn" class="btn">RU</button>
+        <button id="soundBtn" class="btn">🔈</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="center">
+        <div class="brand">
+          <div class="diamond-large">💎</div>
+          <h1 class="holographic">MONEY TALKS</h1>
+          <div class="subblocks">
+            <div class="block accuracy">ACCURACY 99.8%</div>
+            <div class="block free">FOR FREE!</div>
+          </div>
+        </div>
+
+        <!-- Карточки игр -->
+        <div class="cards-wrap">
+
+          <a class="card" href="games/aviator.html" data-game="aviator">
+            <img src="assets/games/aviator.png" alt="Aviator" class="card-img">
+            <div class="card-title">Aviator</div>
+          </a>
+
+          <a class="card" href="games/mines.html" data-game="mines">
+            <img src="assets/games/mines.png" alt="Mines" class="card-img">
+            <div class="card-title">Mines</div>
+          </a>
+
+          <a class="card" href="games/plinko.html" data-game="plinko">
+            <img src="assets/games/plinko.png" alt="Plinko" class="card-img">
+            <div class="card-title">Plinko</div>
+          </a>
+
+          <a class="card" href="games/chickenroad.html" data-game="chicken">
+            <img src="assets/games/chickenroad.png" alt="Chicken Road" class="card-img">
+            <div class="card-title">Chicken Road</div>
+          </a>
+
+          <a class="card" href="games/footballx.html" data-game="footballx">
+            <img src="assets/games/footballx.png" alt="FootballX" class="card-img">
+            <div class="card-title">FootballX</div>
+          </a>
+
+          <a class="card" href="games/thimbles.html" data-game="thimbles">
+            <img src="assets/games/thimbles.png" alt="Thimbles" class="card-img">
+            <div class="card-title">Thimbles</div>
+          </a>
+
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Фон -->
+  <canvas id="bgcanvas" class="bgcanvas"></canvas>
+
+  <!-- Фоновая музыка -->
+  <audio id="bgAudio" loop>
+    <source src="assets/sounds/house-loop.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="lang.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // Эффект загрузки
+    window.addEventListener("load", () => {
+      const loader = document.getElementById("loader");
+      const app = document.getElementById("app");
+      setTimeout(() => {
+        loader.classList.add("hidden");
+        app.classList.remove("hidden");
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

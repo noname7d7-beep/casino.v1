@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iSignal — Aviator Analyzer</title>
+  <link rel="stylesheet" href="../assets/style.css" />
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: Inter, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #07121f, #02060b);
+      color: #fff;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .active { display: flex; }
+
+    .btn {
+      background: linear-gradient(90deg, #ff004d, #ff7e00);
+      color: #fff;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: 40px;
+      cursor: pointer;
+      border: none;
+      transition: all .2s ease;
+    }
+    .btn:hover { transform: scale(1.05); }
+
+    input {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      width: 80%;
+      max-width: 320px;
+      font-size: 14px;
+    }
+
+    .back-btn {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: none;
+      border: none;
+      color: #0ff;
+      font-size: 22px;
+      cursor: pointer;
+      transition: .2s;
+      z-index: 3;
+    }
+    .back-btn:hover { color: #ff004d; }
+
+    h2 { font-size: 26px; font-weight: 700; }
+
+    /* Результат после взрыва */
+    .result {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ff7e00;
+      text-shadow: 0 0 8px rgba(255,126,0,0.6);
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <button class="back-btn" id="backBtn">←</button>
+
+  <!-- 1. Ввод ссылки -->
+  <div class="screen active" id="link-screen">
+    <h2>Введите ссылку казино</h2>
+    <input type="text" id="casino-link" placeholder="https://example.com/game/aviator" />
+    <button class="btn" id="start-btn">Запустить</button>
+    <p id="error" style="color:#f55; font-size:13px; display:none;">Некорректная ссылка</p>
+  </div>
+
+  <!-- 2. Симуляция полёта -->
+  <div class="screen" id="flight-screen">
+    <h2>🚀 Полёт начался!</h2>
+    <canvas id="planeCanvas"></canvas>
+    <div id="multiplier" class="result">1.00x</div>
+  </div>
+
+  <!-- 3. Результат -->
+  <div class="screen" id="result-screen">
+    <h2>💥 Самолёт взорвался!</h2>
+    <div id="final-multiplier" class="result"></div>
+    <button class="btn" id="main-btn">Главная страница</button>
+  </div>
+
+  <script>
+    const linkScreen = document.getElementById("link-screen");
+    const flightScreen = document.getElementById("flight-screen");
+    const resultScreen = document.getElementById("result-screen");
+    const error = document.getElementById("error");
+    const canvas = document.getElementById("planeCanvas");
+    const ctx = canvas.getContext("2d");
+    const multiplierText = document.getElementById("multiplier");
+    const finalMultiplier = document.getElementById("final-multiplier");
+
+    let multiplier = 1.00;
+    let flightActive = false;
+    let explodeTime = 0;
+    let planeX = 50;
+    let planeY = 300;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    // Проверка ссылки
+    document.getElementById("start-btn").addEventListener("click", () => {
+      const link = document.getElementById("casino-link").value.trim();
+      if (!/^https?:\/\/[\w\-_.]+/.test(link)) {
+        error.style.display = "block";
+        return;
+      }
+      error.style.display = "none";
+      startFlight();
+    });
+
+    function startFlight() {
+      linkScreen.classList.remove("active");
+      flightScreen.classList.add("active");
+      multiplier = 1.00;
+      planeX = 50;
+      planeY = canvas.height - 200;
+      flightActive = true;
+
+      // случайный момент взрыва (через 5–10 секунд)
+      explodeTime = Date.now() + (5000 + Math.random() * 5000);
+
+      requestAnimationFrame(updateFlight);
+    }
+
+    function updateFlight() {
+      if (!flightActive) return;
+
+      const now = Date.now();
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Линия графика
+      ctx.beginPath();
+      ctx.moveTo(50, canvas.height - 200);
+      ctx.lineTo(planeX, planeY);
+      ctx.strokeStyle = "#ff004d";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Самолёт
+      ctx.fillStyle = "#ff7e00";
+      ctx.beginPath();
+      ctx.moveTo(planeX, planeY);
+      ctx.lineTo(planeX - 20, planeY + 5);
+      ctx.lineTo(planeX - 20, planeY - 5);
+      ctx.closePath();
+      ctx.fill();
+
+      planeX += 6;
+      planeY -= 1.5;
+
+      // Рост коэффициента
+      multiplier += 0.02;
+      multiplierText.textContent = multiplier.toFixed(2) + "x";
+
+      // взрыв
+      if (now >= explodeTime) {
+        explode();
+      } else {
+        requestAnimationFrame(updateFlight);
+      }
+    }
+
+    function explode() {
+      flightActive = false;
+      flightScreen.classList.remove("active");
+      resultScreen.classList.add("active");
+      finalMultiplier.textContent = multiplier.toFixed(2) + "x";
+    }
+
+    // Назад
+    document.getElementById("backBtn").addEventListener("click", () => {
+      window.location.href = "../index.html";
+    });
+
+    // Главная
+    document.getElementById("main-btn").addEventListener("click", () => {
+      window.location.href = "../index.html";
+    });
+  </script>
+</body>
+</html>
+<script>
+  // Load configuration from localStorage
+  const config = JSON.parse(localStorage.getItem('mt_config') || '{}');
+  const aviatorCfg = config.aviator || { multiplier: 1, mode: 'manual' };
+
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'mt_signal') {
+      try {
+        const signal = JSON.parse(e.newValue);
+        if (signal && signal.type === 'aviator_signal') {
+          console.log('Сигнал от админки:', signal.multiplier);
+          // тут вызываешь свою функцию запуска самолёта
+        }
+      } catch (err) {
+        console.warn('Invalid mt_signal payload', err);
+      }
+    }
+  });
+</script>
