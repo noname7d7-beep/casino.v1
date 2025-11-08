@@ -1,24 +1,187 @@
-
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Chicken Road — Money Talks</title>
-  <link rel="stylesheet" href="../style.css">
+  <title>Chicken Road — Сигналы</title>
+  <style>
+    :root{
+      --bg:#0b1630;
+      --panel:#0f2340;
+      --accent1: linear-gradient(90deg,#ffd34d,#ff6b6b);
+      --accent2: linear-gradient(90deg,#00ffc3,#009dff);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(45,65,110,0.12), transparent), var(--bg);
+      color:#fff; display:flex; align-items:center; justify-content:center; min-height:100vh;
+      padding:20px;
+    }
+    .stage{
+      width:980px; max-width:98vw; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:14px; padding:18px; box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    }
+
+    .topbar{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px}
+    .title{font-weight:800; letter-spacing:1px; display:flex; align-items:center; gap:8px}
+    .title .egg{width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 30% 30%, #ffd34d, #ffb400);display:inline-flex;align-items:center;justify-content:center;color:#3b2200;font-weight:900}
+    .controls{display:flex; gap:8px; align-items:center}
+
+    .board{
+      display:flex; gap:14px; padding:16px; background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+      border-radius:10px; position:relative; overflow:hidden;
+    }
+
+    .lane{
+      flex:1; min-width:96px; display:flex; flex-direction:column; align-items:center; padding:12px 6px; position:relative;
+      border-radius:8px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03));
+    }
+
+    .mult{
+      width:86px; height:86px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700;
+      font-size:18px; margin-bottom:8px; background:linear-gradient(180deg,#2f4f7b,#223651); box-shadow: inset 0 -6px 18px rgba(0,0,0,0.35);
+      color:#dfefff;
+    }
+
+    .gate{
+      width:94%; height:46px; background:#0b2340; border-radius:8px; margin-top:auto; display:flex; align-items:center;
+      justify-content:center; position:relative; border:2px solid rgba(255,255,255,0.03);
+    }
+
+    .gate::before{
+      content:""; position:absolute; left:50%; transform:translateX(-50%); top:-8px; width:30px; height:6px; border-radius:6px;
+      background:rgba(255,255,255,0.02);
+    }
+
+    .mult.green{ background: linear-gradient(180deg,#28c76f,#1e8a55); box-shadow: 0 6px 14px rgba(40,199,111,0.14); color:#05210b}
+    .mult.yellow{ background: linear-gradient(180deg,#ffd34d,#ffb21a); color:#2b1700; box-shadow: 0 6px 14px rgba(255,211,77,0.12) }
+    .mult.red{ background: linear-gradient(180deg,#ff6b6b,#ff3c3c); box-shadow: 0 8px 20px rgba(255,60,60,0.12) }
+    .mult.win{ background: linear-gradient(180deg,#7cc9ff,#4a8fe8); box-shadow: 0 8px 20px rgba(74,143,232,0.12); color:#021a2e }
+
+    /* signal badge inside lane */
+    .signal-badge{ position:absolute; top:54px; left:50%; transform:translateX(-50%); width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px;
+      background:rgba(255,255,255,0.03); color:#fff; transition:all .25s ease; box-shadow:0 6px 18px rgba(0,0,0,0.45);
+    }
+    .signal-badge.green{ background:#1f7a4a; }
+    .signal-badge.yellow{ background:#b07a0b; }
+    .signal-badge.red{ background:#8a1f1f; }
+    .signal-badge.win{ background:#1f5a8a; }
+
+    /* chicken */
+    .chicken-wrap{ position:absolute; left:14px; bottom:18px; display:flex; align-items:flex-end; gap:8px; z-index:20; }
+    .chicken{ font-size:64px; transform-origin:bottom center; transition: transform .3s ease, left .4s ease; will-change: transform, left; }
+    .chicken.small{ font-size:44px }
+
+    /* admin modal small */
+    .admin-panel{ display:flex; align-items:center; gap:8px; background:rgba(255,255,255,0.02); padding:8px 10px; border-radius:10px; }
+    .btn{ padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:700; background:linear-gradient(90deg,#00ffc3,#009dff); color:#001; }
+    .btn.ghost{ background:transparent; border:1px solid rgba(255,255,255,0.06); color:#fff; font-weight:600; }
+    .small{ padding:6px 10px; font-size:14px }
+
+    .footer{ margin-top:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; color:#cfe6ff; font-size:13px }
+
+    /* highlight lane when clicked/admin */
+    .lane.admin-hover{ outline:2px dashed rgba(255,255,255,0.06); }
+
+    /* responsive */
+    @media (max-width:720px){
+      .chicken{ font-size:48px } .mult{ width:64px;height:64px;font-size:14px } .stage{ padding:12px }
+      .board{ gap:8px }
+      .lane{ min-width:72px; padding:8px }
+    }
+  </style>
 </head>
 <body>
-  <div class="app">
-    <a class="btn" href="../index.html">⬅️ Назад</a>
-    <div style="max-width:900px;margin:40px auto;text-align:center">
-      <h2 class="holographic">Chicken Road</h2>
-      <p style="color:#cbd5e1">Это демо-страница для игры <strong>Chicken Road</strong>. Здесь можно позже добавить логику игры или вставить твои ассеты.</p>
-      <div style="margin-top:24px">
-        <img src="../assets/games/chicken road.png" alt="" style="max-width:320px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.6)">
+  <div class="stage">
+    <div class="topbar">
+      <div class="title"><div class="egg">🥚</div><div>CHICKEN ROAD — Сигналы</div></div>
+      <div class="controls">
+        <button class="btn small" id="next-signal">Получить сигнал</button>
       </div>
     </div>
+
+    <div class="board" id="board">
+      <!-- lanes будут сгенерированы скриптом -->
+    </div>
+
+    <div class="chicken-wrap" id="chicken-wrap" aria-hidden="true">
+      <div class="chicken" id="chicken">🐔</div>
+    </div>
+
+    <div class="footer">
+      <div>Сигналы сохраняются — остаются, пока админ не сменит их.</div>
+      <div id="pos-display">Позиция: 1 / 7</div>
+    </div>
   </div>
-  <canvas class="bgcanvas"></canvas>
-  <script src="../script.js"></script>
+
+  <script>
+  const LANES = 7;
+  const defaultMultipliers = ["1.00x", "1.28x", "1.36x", "1.44x", "1.53x", "1.63x", "1.75x"];
+
+  const board = document.getElementById('board');
+  const chickenWrap = document.getElementById('chicken-wrap');
+  const chicken = document.getElementById('chicken');
+
+  let currentPos = 0;
+
+  // Создаём круги в отдельных контейнерах
+  function createBoard() {
+    board.innerHTML = ''; // Очистка доски
+    for (let i = 0; i < LANES; i++) {
+      const lane = document.createElement('div');
+      lane.className = 'lane';
+      lane.dataset.index = i;
+
+      // Контейнер для каждого круга
+      const ballContainer = document.createElement('div');
+      ballContainer.className = 'ball-container';
+
+      const mult = document.createElement('div');
+      mult.className = 'mult';
+      mult.textContent = defaultMultipliers[i];
+
+      ballContainer.appendChild(mult); // Добавляем круг в контейнер
+      lane.appendChild(ballContainer); // Добавляем контейнер в lane
+      board.appendChild(lane);
+    }
+  }
+
+  // Позиционирование курицы внутри круга и чуть выше центра
+  function moveChickenTo(index) {
+    const lanes = document.querySelectorAll('.lane');
+    const target = lanes[index];
+    if (!target) return;
+
+    const ballContainer = target.querySelector('.ball-container');
+    const rect = ballContainer.getBoundingClientRect();
+    const boardRect = board.getBoundingClientRect();
+
+    const left = rect.left - boardRect.left + rect.width / 2 - chickenWrap.offsetWidth / 2; // Центр контейнера по горизонтали
+    const top = rect.top - boardRect.top + rect.height / 2 - chickenWrap.offsetHeight / 1.5; // Чуть выше центра контейнера
+
+    chickenWrap.style.transition = 'all 0.6s cubic-bezier(.2,.9,.3,1)';
+    chickenWrap.style.left = `${left}px`;
+    chickenWrap.style.top = `${top}px`;
+    chicken.style.transform = 'translateY(-4px) rotate(-3deg)';
+    setTimeout(() => (chicken.style.transform = ''), 500);
+  }
+
+  // Рандомное перемещение
+  function randomMove() {
+    const newIndex = Math.floor(Math.random() * LANES);
+    currentPos = newIndex;
+    moveChickenTo(currentPos);
+  }
+
+  // Инициализация
+  function init() {
+    createBoard();
+    moveChickenTo(0); // Начальная позиция
+    document.getElementById('next-signal').addEventListener('click', randomMove);
+  }
+
+  init();
+  </script>
 </body>
 </html>

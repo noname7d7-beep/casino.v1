@@ -1,24 +1,202 @@
-
 <!doctype html>
-<html lang="ru">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Plinko — Money Talks</title>
-  <link rel="stylesheet" href="../style.css">
+<meta charset="utf-8" />
+<title>Money Talks - Plinko</title>
+<style>
+  html, body {
+    height: 100%; margin: 0; font-family: Arial, Helvetica, sans-serif;
+    background: linear-gradient(180deg, #0a0f14, #1b2735); color: #eee;
+    display: flex; justify-content: center; align-items: center;
+  }
+  #app, #splashScreen, #linkScreen, #connectScreen, #ballPanel, #oddsDisplay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex;
+    justify-content: center; align-items: center; flex-direction: column; z-index: 1000;
+    background: rgba(0, 0, 0, 0.8); color: #eee; text-align: center; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+  }
+  #splashScreen h1, #connectScreen h1, #ballPanel h1, #oddsDisplay {
+    font-size: 28px; margin-bottom: 16px; font-weight: bold; color: #ffd700;
+  }
+  #linkScreen input, #ballPanel input {
+    padding: 12px; border-radius: 8px; border: 1px solid #444; width: 80%; margin-bottom: 16px;
+    background: #1e2a38; color: #fff; font-size: 16px; text-align: center;
+  }
+  .ball-options {
+    display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  }
+  .ball-options button {
+    padding: 12px 24px; border-radius: 8px; border: none; background: #ffd700; color: #111;
+    font-size: 16px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  }
+  .ball-options button:hover { background: #e6c200; }
+  button {
+    padding: 12px 24px; border-radius: 8px; border: none; background: #ffd700; color: #111;
+    font-size: 16px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  }
+  button:hover { background: #e6c200; }
+  #backButton {
+    position: absolute; top: 16px; left: 16px; padding: 8px 16px; font-size: 14px;
+    background: #ffd700; color: #111; border-radius: 6px; border: none; cursor: pointer;
+    font-weight: bold; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  }
+  canvas { display: block; border-radius: 8px; margin-top: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6); }
+  @media (max-width: 768px) {
+    canvas { width: 90%; height: auto; }
+    .ball-options button { padding: 10px 20px; font-size: 14px; }
+  }
+</style>
 </head>
 <body>
-  <div class="app">
-    <a class="btn" href="../index.html">⬅️ Назад</a>
-    <div style="max-width:900px;margin:40px auto;text-align:center">
-      <h2 class="holographic">Plinko</h2>
-      <p style="color:#cbd5e1">Это демо-страница для игры <strong>Plinko</strong>. Здесь можно позже добавить логику игры или вставить твои ассеты.</p>
-      <div style="margin-top:24px">
-        <img src="../assets/games/plinko.png" alt="" style="max-width:320px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.6)">
-      </div>
-    </div>
+<div id="splashScreen">
+  <button id="backButton" onclick="goBack()">Back</button>
+  <h1>Welcome to Money Talks</h1>
+  <button onclick="showLinkScreen()">Log In</button>
+</div>
+
+<div id="linkScreen" style="display:none;">
+  <button id="backButton" onclick="goBack()">Back</button>
+  <h1>Insert Link</h1>
+  <input id="linkInput" type="text" placeholder="Enter your link here">
+  <button onclick="verifyLink()">Launch</button>
+</div>
+
+<div id="connectScreen" style="display:none;">
+  <button id="backButton" onclick="goBack()">Back</button>
+  <h1>Connecting...</h1>
+</div>
+
+<div id="ballPanel" style="display:none;">
+  <button id="backButton" onclick="goBack()">Back</button>
+  <h1>Select Number of Balls</h1>
+  <div class="ball-options">
+    <button onclick="startGame(1)">1</button>
+    <button onclick="startGame(3)">3</button>
+    <button onclick="startGame(5)">5</button>
+    <button onclick="startGame(10)">10</button>
   </div>
-  <canvas class="bgcanvas"></canvas>
-  <script src="../script.js"></script>
+</div>
+
+<div id="oddsDisplay" style="display:none;">
+  <button id="backButton" onclick="goBack()">Back</button>
+  <h1 id="oddsText"></h1>
+</div>
+
+<div id="app" style="display:none;">
+  <button id="backButton" onclick="goBack()">Back</button>
+  <div id="board" class="panel">
+    <canvas id="renderCanvas"></canvas>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+<script>
+const { Engine, Render, World, Bodies, Events } = Matter;
+
+const WIDTH = 560, HEIGHT = 720;
+const engine = Engine.create();
+engine.gravity.y = 1.05;
+
+const render = Render.create({
+  element: document.getElementById('board'),
+  engine: engine,
+  canvas: document.getElementById('renderCanvas'),
+  options: { width: WIDTH, height: HEIGHT, wireframes: false, background: 'transparent' }
+});
+Render.run(render);
+Matter.Runner.run(Matter.Runner.create(), engine);
+
+function goBack() {
+  window.location.href = '../index.html'; // Redirect to the main index.html page
+}
+
+function showLinkScreen() {
+  document.getElementById('splashScreen').style.display = 'none';
+  document.getElementById('linkScreen').style.display = 'flex';
+}
+
+function verifyLink() {
+  const link = document.getElementById('linkInput').value;
+  if (link.startsWith('http')) {
+    document.getElementById('linkScreen').style.display = 'none';
+    document.getElementById('connectScreen').style.display = 'flex';
+    setTimeout(() => {
+      document.getElementById('connectScreen').style.display = 'none';
+      document.getElementById('ballPanel').style.display = 'flex';
+    }, 2000);
+  } else {
+    alert('Invalid link. Please try again.');
+  }
+}
+
+function startGame(ballCount) {
+  document.getElementById('ballPanel').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  simulateGame(ballCount);
+}
+
+function simulateGame(ballCount) {
+  const payoutValues = [0, 1, 2, 5, 10, 50, 10, 2, 1];
+  let totalOdds = 0;
+
+  for (let i = 0; i < ballCount; i++) {
+    const randomSlot = Math.floor(Math.random() * payoutValues.length);
+    totalOdds += payoutValues[randomSlot];
+    spawnBall(randomSlot * (WIDTH / payoutValues.length) + (WIDTH / payoutValues.length) / 2);
+  }
+
+  setTimeout(() => {
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('oddsText').innerText = `Total Odds: x${totalOdds}`;
+    document.getElementById('oddsDisplay').style.display = 'flex';
+  }, 5000);
+}
+
+function spawnBall(x) {
+  const ball = Bodies.circle(x, 40, 10, { restitution: 0.35, render: { fillStyle: '#ff9f1c' } });
+  World.add(engine.world, ball);
+  setTimeout(() => World.remove(engine.world, ball), 5000);
+}
+
+// Walls and pegs
+World.add(engine.world, [
+  Bodies.rectangle(WIDTH / 2, -20, WIDTH, 40, { isStatic: true }),
+  Bodies.rectangle(WIDTH / 2, HEIGHT + 20, WIDTH, 40, { isStatic: true }),
+  Bodies.rectangle(-20, HEIGHT / 2, 40, HEIGHT, { isStatic: true }),
+  Bodies.rectangle(WIDTH + 20, HEIGHT / 2, 40, HEIGHT, { isStatic: true })
+]);
+
+const pegRadius = 6, rows = 10, cols = 8, startY = 120, spacingX = WIDTH / cols;
+for (let row = 0; row < rows; row++) {
+  for (let col = 0; col < cols; col++) {
+    const offset = (row % 2 === 0) ? spacingX / 2 : 0;
+    const x = col * spacingX + offset;
+    const y = startY + row * 55;
+    World.add(engine.world, Bodies.circle(x, y, pegRadius, { isStatic: true, render: { fillStyle: '#cfe8f5' } }));
+  }
+}
+</script>
+<script>
+  // Fetch translations from localStorage
+  const translations = JSON.parse(localStorage.getItem("translations"));
+  const savedLang = localStorage.getItem("language") || "en";
+
+  // Apply translations
+  function applyTranslations(lang) {
+    document.title = translations[lang].title;
+    document.querySelector("#splashScreen h1").textContent = translations[lang].welcome;
+    document.querySelector("#splashScreen button:nth-of-type(2)").textContent = translations[lang].logIn;
+    document.querySelector("#linkScreen h1").textContent = translations[lang].insertLink;
+    document.querySelector("#linkInput").placeholder = translations[lang].enterLink;
+    document.querySelector("#linkScreen button:nth-of-type(2)").textContent = translations[lang].launch;
+    document.querySelector("#connectScreen h1").textContent = translations[lang].connecting;
+    document.querySelector("#ballPanel h1").textContent = translations[lang].selectBalls;
+    document.querySelector("#oddsText").textContent = translations[lang].totalOdds;
+  }
+
+  // Initialize language
+  document.addEventListener("DOMContentLoaded", () => {
+    applyTranslations(savedLang);
+  });
+</script>
 </body>
 </html>

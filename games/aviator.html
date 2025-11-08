@@ -82,10 +82,45 @@
       text-shadow: 0 0 8px rgba(255,126,0,0.6);
       margin-top: 20px;
     }
+
+    /* Топ-бар для выбора языка */
+    .topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: flex-end;
+      background: rgba(7, 18, 31, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 4;
+    }
+    .topbar select {
+      background: linear-gradient(90deg, #ff004d, #ff7e00);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
   <button class="back-btn" id="backBtn">←</button>
+
+  <!-- Топ-бар для выбора языка -->
+  <header class="topbar">
+    <div class="controls">
+      <select id="langSelect" class="btn">
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="tr">Türkçe</option>
+        <option value="ru">Русский</option>
+      </select>
+    </div>
+  </header>
 
   <!-- 1. Ввод ссылки -->
   <div class="screen active" id="link-screen">
@@ -211,6 +246,21 @@
     // Главная
     document.getElementById("main-btn").addEventListener("click", () => {
       window.location.href = "../index.html";
+    });
+
+    // Fetch translations from localStorage
+    const translations = JSON.parse(localStorage.getItem("translations"));
+    const savedLang = localStorage.getItem("language") || "en";
+
+    // Apply translations
+    function applyTranslations(lang) {
+      document.title = translations[lang].title;
+      document.querySelector("#gameDescription").textContent = translations[lang].games.aviator;
+    }
+
+    // Initialize language
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTranslations(savedLang);
     });
   </script>
 </body>
